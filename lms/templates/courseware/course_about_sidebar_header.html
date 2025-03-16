@@ -1,0 +1,76 @@
+<%page expression_filter="h"/>
+<%namespace name='static' file='../static_content.html'/>
+<%!
+import six
+
+from django.utils.translation import gettext as _
+from django.urls import reverse
+from django.conf import settings
+%>
+
+<header>
+  % if static.get_value('course_about_show_social_links', True):
+  <div class="social-sharing">
+    <div class="sharing-message">${_("Share with friends and family!")}</div>
+    ## TODO: this should probably be an overrideable block,
+    ##       or something allowing themes to do whatever they
+    ##       want here (and on this whole page, really).
+      <%
+        site_domain = static.get_value('site_domain', settings.SITE_NAME)
+        site_protocol = 'https' if settings.HTTPS == 'on' else 'http'
+        platform_name = static.get_platform_name()
+        course_path = reverse('about_course', args=[str(course.id)])
+        course_url = f"{site_protocol}://{site_domain}{course_path}"
+
+        ## Translators: This text will be automatically posted to the student's
+        ## Twitter account. {url} should appear at the end of the text.
+        tweet_text = _("I just enrolled in {number} {title} through {account} {url}").format(
+            number=course.number,
+            title=course.display_name_with_default,
+            account=static.get_value('course_about_twitter_account', settings.PLATFORM_TWITTER_ACCOUNT),
+            url=course_url
+        )
+
+        tweet_action = u"https://twitter.com/intent/tweet?text={tweet_text}".format(tweet_text=six.moves.urllib.parse.quote(tweet_text))
+
+        facebook_link = f"https://www.facebook.com/sharer/sharer.php?u={six.moves.urllib.parse.quote(course_url)}"
+
+        email_body = _("I just enrolled in {number} {title} through {platform} {url}").format(
+                number=course.number,
+                title=course.display_name_with_default,
+                platform=platform_name,
+                url=course_url
+        )
+
+        email_subject = _("Take a course with {platform} online").format(platform=platform_name)
+        email_link = u"mailto:?subject={subject}&body={body}".format(
+            subject=six.moves.urllib.parse.quote(email_subject.encode('UTF-8')),
+            body=six.moves.urllib.parse.quote(email_body.encode('UTF-8'))
+        )
+      %>
+      <a href="${tweet_action}" class="share">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M9.59954 4.802C9.41841 4.53493 9.11668 4.375 8.79398 4.375H5.14783C4.83544 4.375 4.65025 4.72438 4.8256 4.9829L14.4897 19.2312C14.6708 19.4983 14.9725 19.6582 15.2952 19.6582H18.9414C19.2538 19.6582 19.439 19.3088 19.2636 19.0503L9.59954 4.802Z" stroke="#9CA3AF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M10.4499 13.4331L4.66895 19.9998" stroke="#9CA3AF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M18.7571 4L13.3203 10.1756" stroke="#9CA3AF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="sr">${_("Tweet that you've enrolled in this course")}</span>
+      </a>
+      <a href="${facebook_link}" class="share">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 21C16.9709 21 21 16.9709 21 12C21 7.02908 16.9709 3 12 3C7.02908 3 3 7.02908 3 12C3 16.9709 7.02908 21 12 21Z" stroke="#9CA3AF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M14.0835 7.91016H13.3538C12.2222 7.91016 11.3047 8.82767 11.3047 9.95924V16.0919" stroke="#9CA3AF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M9.91602 11.3828H14.0842" stroke="#9CA3AF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="sr">${_("Post a Facebook message to say you've enrolled in this course")}</span>
+      </a>
+      <a href="${email_link}" class="share">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M17.9028 8.85107L13.4596 12.4641C12.6201 13.1301 11.4389 13.1301 10.5994 12.4641L6.11865 8.85107" stroke="#9CA3AF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M16.9089 21C19.9502 21.0084 22 18.5095 22 15.4384V8.57001C22 5.49883 19.9502 3 16.9089 3H7.09114C4.04979 3 2 5.49883 2 8.57001V15.4384C2 18.5095 4.04979 21.0084 7.09114 21H16.9089Z" stroke="#9CA3AF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="sr">${_("Email someone to say you've enrolled in this course")}</span>
+      </a>
+  </div>
+  % endif
+</header>
